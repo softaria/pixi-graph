@@ -6,8 +6,6 @@
 
 Graph visualization library using [PIXI.js](https://www.pixijs.com/) and [Graphology](https://graphology.github.io/).
 
-⚠️ **The repository is archived as read-only. Feel free to continue in your own fork.**
-
 Developing a full-featured graph visualization library is a significant effort. I'd appreciate your feedback to prioritize new features by filling in a [survey](https://link.zakjan.cz/pixi-graph-survey).
 
 [Demo](https://zakjan.github.io/pixi-graph/)

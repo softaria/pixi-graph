@@ -24,6 +24,11 @@ or
 <script src="https://unpkg.com/graphology@0.18.0/dist/graphology.umd.js"></script>
 <script src="https://unpkg.com/pixi-graph@1.3.1/dist/pixi-graph.umd.min.js"></script>
 ```
+## Run demo
+
+1. Install dependencies: ```npm install```
+2. Rebuild library: ```npm build```
+3. Open demo /PATH/TO/PROJECT/docs/index.html
 
 ## Usage
 

@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <title>pixi-graph</title>
-  <script src="https://unpkg.com/graphology@0.19.3/dist/graphology.umd.js"></script>
+  <script src="https://unpkg.com/graphology@0.25.4/dist/graphology.umd.js"></script>
   <script src="https://unpkg.com/graphology-layout-forceatlas2@0.4.4/build/graphology-layout-forceatlas2.js"></script>
   <script src="https://unpkg.com/fontfaceobserver@2.1.0/fontfaceobserver.standalone.js"></script>
-  <script src="https://unpkg.com/pixi-graph@1.3.1/dist/pixi-graph.umd.min.js"></script>
-  <!-- <script src="../dist/pixi-graph.umd.js"></script> -->
+  <!-- <script src="https://unpkg.com/pixi-graph@1.3.1/dist/pixi-graph.umd.min.js"></script> -->
+  <script src="../dist/pixi-graph.umd.js"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     body {
@@ -62,51 +62,30 @@ const colors = [
 
 window.addEventListener('DOMContentLoaded', async () => {
   const graph = new graphology.Graph();
-  const { nodes, links } = await (await fetch('miserables.json')).json();
-  // const { nodes, links } = await (await fetch('socfb-Caltech36.json')).json();
-  nodes.forEach(node => {
-    graph.addNode(node.id, node);
-  });
-  links.forEach(link => {
-    graph.addEdge(link.source, link.target, link);
-  });
-
-  // layout
-  graph.forEachNode(node => {
-    graph.setNodeAttribute(node, 'x', Math.random());
-    graph.setNodeAttribute(node, 'y', Math.random());
-  });
-  // forceAtlas2.assign(graph, { iterations: 300, settings: { ...forceAtlas2.inferSettings(graph), scalingRatio: 80 }});
-  const positions = await (await fetch('miserables-positions.json')).json();
-  graph.forEachNode(node => {
-    const position = positions[node];
-    graph.setNodeAttribute(node, 'x', position.x);
-    graph.setNodeAttribute(node, 'y', position.y);
-  });
 
   const style = {
     node: {
-      size: 15,
-      color: node => colors[(node.group || 0) % colors.length],
+      width: 230,
+      height: 150,
+      roundingFactor: 0.1,
+      color: '#095b59',
       border: {
         width: 2,
         color: '#ffffff',
       },
-      icon: {
-        content: 'person',
-        fontFamily: 'Material Icons',
-        fontSize: 20,
-        color: '#ffffff',
+      text: {
+        content: [
+          node => "name: " + node.name,
+          node => "phone: " + node.phone,
+          node => "email: " + node.email,
+        ],
       },
-      label: {
-        content: node => node.id,
-        type: PixiGraph.TextType.BITMAP_TEXT,
-        fontFamily: 'HelveticaRegular',
-        fontSize: 12,
-        color: '#333333',
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
-        padding: 4,
-      },
+      circleStatus: {
+        size: 10,
+        x: 90,
+        y: -50,
+        color: node => colors[(node.group || 0) % colors.length],
+      }
     },
     edge: {
       width: link => Math.log((link.value || 0) + 1) + 1,
@@ -117,9 +96,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     node: {
       border: {
         color: '#000000',
-      },
-      label: {
-        backgroundColor: 'rgba(238, 238, 238, 1)',
       },
     },
     edge: {
@@ -139,6 +115,32 @@ window.addEventListener('DOMContentLoaded', async () => {
     hoverStyle,
     resources,
   });
+
+  for (var i = 0; i < 1000; i ++) {
+    graph.addNode(
+      i.toString(),
+      {
+        id: i.toString(),
+        group: (i % 13).toString(),
+        name: "Test name",
+        email: "testmail@mail.ru",
+        phone: "+8 999 999 9999",
+      }
+    )
+  }
+  for (var i = 0; i < 100; i ++) {
+    const from = Math.floor(Math.abs(Math.random() * 1000)).toString()
+    const to = Math.floor(Math.abs(Math.random() * 1000)).toString()
+    graph.addEdge(from, to, {source: from, target: to, value: "1"})
+  }
+
+
+  // layout
+  graph.forEachNode(node => {
+    graph.setNodeAttribute(node, 'x', Math.random() * 10000);
+    graph.setNodeAttribute(node, 'y', Math.random() * 10000);
+  });
+
   pixiGraph.on('nodeClick', (event, nodeKey) => console.log('nodeClick', event, nodeKey));
   pixiGraph.on('nodeMousemove', (event, nodeKey) => console.log('nodeMousemove', event, nodeKey));
   pixiGraph.on('nodeMouseover', (event, nodeKey) => console.log('nodeMouseover', event, nodeKey));
@@ -262,7 +264,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   let serializedGraph;
   const exportGraph = () => {
     serializedGraph = graph.export();
-    console.log(serializedGraph);
   };
   document.getElementById('export').addEventListener('click', exportGraph);
 

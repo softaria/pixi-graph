@@ -18,6 +18,7 @@ import { TextureCache } from './texture-cache';
 import { PixiNode } from './node';
 import { PixiEdge } from './edge';
 import { LINE_SCALE_MODE, settings } from '@pixi/graphics-smooth';
+import { WORLD_PADDING } from './constants/Constants';
 
 Application.registerPlugin(TickerPlugin);
 Application.registerPlugin(AppLoaderPlugin);
@@ -27,36 +28,42 @@ Renderer.registerPlugin('interaction', InteractionManager);
 
 const DEFAULT_STYLE: GraphStyleDefinition = {
   node: {
-    size: 15,
+    height: 30,
+    width: 30,
+    roundingFactor: 0,
     color: '#000000',
     border: {
       width: 2,
       color: '#ffffff',
     },
-    icon: {
+    text: {
       type: TextType.TEXT,
       fontFamily: 'Arial',
-      fontSize: 20,
+      fontSize: 18,
       color: '#ffffff',
-      content: '',
+      content: [],
     },
     label: {
       type: TextType.TEXT,
       fontFamily: 'Arial',
-      fontSize: 12,
+      fontSize: 18,
       content: '',
       color: '#333333',
       backgroundColor: 'rgba(0, 0, 0, 0)',
       padding: 4,
     },
+    circleStatus: {
+      size: 0,
+      x: 0,
+      y: 0,
+      color: '#ffffff'
+    }
   },
   edge: {
     width: 1,
-    color: '#cccccc',
+    color: '#aaaaaa',
   },
 };
-
-const WORLD_PADDING = 100;
 
 export interface GraphOptions<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> {
   container: HTMLElement;

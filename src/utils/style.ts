@@ -4,14 +4,16 @@ import { TextType } from './text';
 
 export interface GraphStyle {
   node: {
-    size: number;
+    width: number;
+    height: number;
+    roundingFactor: number;
     color: string;
     border: {
       width: number;
       color: string;
     };
-    icon: {
-      content: string;
+    text: {
+      content: string[];
       type: TextType;
       fontFamily: string;
       fontSize: number;
@@ -26,6 +28,12 @@ export interface GraphStyle {
       backgroundColor: string;
       padding: number;
     };
+    circleStatus: {
+      size: number;
+      color: string;
+      x: number;
+      y: number;
+    }
   };
   edge: {
     width: number;
@@ -50,19 +58,22 @@ export interface GraphStyleDefinition<NodeAttributes extends BaseNodeAttributes 
 }
 
 export function resolveStyleDefinition<Style, Attributes>(styleDefinition: StyleDefinition<Style, Attributes>, attributes: Attributes): Style {
-  let style: Style;
+
   if (styleDefinition instanceof Function) {
-    style = styleDefinition(attributes);
-  } else if (typeof styleDefinition === 'object' && styleDefinition !== null) {
-    style = Object.fromEntries(
+    return styleDefinition(attributes);
+  }
+  if (Array.isArray(styleDefinition)) {
+    return (styleDefinition.map(style => resolveStyleDefinition(style, attributes))) as Style;
+  }
+  if (typeof styleDefinition === 'object' && styleDefinition !== null) {
+    return Object.fromEntries(
       Object.entries(styleDefinition).map(([key, styleDefinition]) => {
         return [key, resolveStyleDefinition(styleDefinition, attributes)];
       })
     ) as Style;
-  } else {
-    style = styleDefinition;
   }
-  return style;
+  
+  return styleDefinition;
 }
 
 export function resolveStyleDefinitions<Style, Attributes>(styleDefinitions: (StyleDefinition<Style, Attributes> | undefined)[], attributes: Attributes): Style {

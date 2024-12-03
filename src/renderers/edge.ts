@@ -5,8 +5,7 @@ import '@pixi/mixin-get-child-by-name';
 import { colorToPixi } from '../utils/color';
 import { EdgeStyle } from '../utils/style';
 import { TextureCache } from '../texture-cache';
-
-const EDGE_LINE = 'EDGE_LINE';
+import { EDGE_LINE } from '../constants/Constants';
 
 export function createEdge(edgeGfx: Container) {
   // edgeGfx -> edgeLine

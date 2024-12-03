@@ -35,7 +35,7 @@ const bundle = (format, filename, options = {}) => ({
 export default [
   bundle('cjs', pkg.main),
   bundle('es', pkg.module),
-  bundle('iife', pkg.browser.replace('.min', ''), { resolve: true }),
+  bundle('iife', pkg.browser, { resolve: true }),
   {
     input: 'src/index.ts',
     output: {

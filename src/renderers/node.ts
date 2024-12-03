@@ -1,5 +1,5 @@
 import { Container } from '@pixi/display';
-import { Circle } from '@pixi/math';
+import { RoundedRectangle } from '@pixi/math';
 import { Sprite } from '@pixi/sprite';
 import { SmoothGraphics as Graphics } from '@pixi/graphics-smooth';
 import '@pixi/mixin-get-child-by-name';
@@ -7,91 +7,115 @@ import { colorToPixi } from '../utils/color';
 import { NodeStyle } from '../utils/style';
 import { textToPixi } from '../utils/text';
 import { TextureCache } from '../texture-cache';
-
-const DELIMETER = '::';
-const WHITE = 0xffffff;
-
-const NODE_CIRCLE = 'NODE_CIRCLE';
-const NODE_CIRCLE_BORDER = 'NODE_CIRCLE_BORDER';
-const NODE_ICON = 'NODE_ICON';
+import { CENTER_POSITION, DELIMETER, MAX_ZOOM, MAX_ZOOM_BORDER, NODE_CIRCLE_STATUS, NODE_ICON, NODE_RECTANGLE, NODE_RECTANGLE_BORDER, TEXT_DELIMETER, TOP_LEFT_CORNER_COEFFICIENT, WHITE } from '../constants/Constants';
 
 export function createNode(nodeGfx: Container) {
   // nodeGfx
-  nodeGfx.hitArea = new Circle(0, 0);
+  nodeGfx.hitArea = new RoundedRectangle(0, 0);
 
-  // nodeGfx -> nodeCircle
-  const nodeCircle = new Sprite();
-  nodeCircle.name = NODE_CIRCLE;
-  nodeCircle.anchor.set(0.5);
-  nodeGfx.addChild(nodeCircle);
+  // nodeGfx -> nodeRectangle
+  const nodeRectangle = new Sprite();
+  nodeRectangle.name = NODE_RECTANGLE;
+  nodeRectangle.anchor.set(CENTER_POSITION);
+  nodeGfx.addChild(nodeRectangle);
 
-  // nodeGfx -> nodeCircleBorder
-  const nodeCircleBorder = new Sprite();
-  nodeCircleBorder.name = NODE_CIRCLE_BORDER;
-  nodeCircleBorder.anchor.set(0.5);
-  nodeGfx.addChild(nodeCircleBorder);
+  // nodeGfx -> nodeRectangleBorder
+  const nodeRectangleBorder = new Sprite();
+  nodeRectangleBorder.name = NODE_RECTANGLE_BORDER;
+  nodeRectangleBorder.anchor.set(CENTER_POSITION);
+  nodeGfx.addChild(nodeRectangleBorder);
 
   // nodeGfx -> nodeIcon
   const nodeIcon = new Sprite();
   nodeIcon.name = NODE_ICON;
-  nodeIcon.anchor.set(0.5);
+  nodeIcon.anchor.set(CENTER_POSITION);
   nodeGfx.addChild(nodeIcon);
+
+  // nodeGfx -> nodeCircleStatus
+  const nodeCircleStatus = new Sprite();
+  nodeCircleStatus.name = NODE_CIRCLE_STATUS;
+  nodeCircleStatus.anchor.set(CENTER_POSITION);
+  nodeGfx.addChild(nodeCircleStatus);
 }
 
 export function updateNodeStyle(nodeGfx: Container, nodeStyle: NodeStyle, textureCache: TextureCache) {
-  const nodeOuterSize = nodeStyle.size + nodeStyle.border.width;
+  const nodeOuterSize = nodeStyle.width + nodeStyle.border.width;
 
-  const nodeCircleTextureKey = [NODE_CIRCLE, nodeStyle.size].join(DELIMETER);
-  const nodeCircleTexture = textureCache.get(nodeCircleTextureKey, () => {
+  const nodeRectangleTextureKey = [NODE_RECTANGLE, nodeStyle.width, nodeStyle.height, nodeStyle.roundingFactor].join(DELIMETER);
+  const nodeRectangleTexture = textureCache.get(nodeRectangleTextureKey, () => {
     const graphics = new Graphics();
     graphics.beginFill(WHITE, 1.0, true);
-    graphics.drawCircle(nodeStyle.size, nodeStyle.size, nodeStyle.size);
+    graphics.drawRoundedRect(nodeStyle.width, nodeStyle.width, nodeStyle.width, nodeStyle.height, nodeStyle.width * nodeStyle.roundingFactor);
     return graphics;
   });
 
-  const nodeCircleBorderTextureKey = [NODE_CIRCLE_BORDER, nodeStyle.size, nodeStyle.border.width].join(DELIMETER);
-  const nodeCircleBorderTexture = textureCache.get(nodeCircleBorderTextureKey, () => {
+  const nodeRectangleBorderTextureKey = [NODE_RECTANGLE_BORDER, nodeStyle.width, nodeStyle.height, nodeStyle.border.width, nodeStyle.roundingFactor].join(DELIMETER);
+  const nodeRectangleBorderTexture = textureCache.get(nodeRectangleBorderTextureKey, () => {
     const graphics = new Graphics();
     graphics.lineStyle(nodeStyle.border.width, WHITE);
-    graphics.drawCircle(nodeOuterSize, nodeOuterSize, nodeStyle.size);
+    graphics.drawRoundedRect(nodeOuterSize, nodeOuterSize, nodeStyle.width, nodeStyle.height, nodeStyle.width * nodeStyle.roundingFactor);
     return graphics;
   });
 
-  const nodeIconTextureKey = [NODE_ICON, nodeStyle.icon.fontFamily, nodeStyle.icon.fontSize, nodeStyle.icon.content].join(DELIMETER);
+  const nodeIconTextureKey = [NODE_ICON, nodeStyle.text.fontFamily, nodeStyle.text.fontSize, ...nodeStyle.text.content].join(DELIMETER);
   const nodeIconTexture = textureCache.get(nodeIconTextureKey, () => {
-    const text = textToPixi(nodeStyle.icon.type, nodeStyle.icon.content, {
-      fontFamily: nodeStyle.icon.fontFamily,
-      fontSize: nodeStyle.icon.fontSize
+    const text = textToPixi(nodeStyle.text.type, nodeStyle.text.content.join(TEXT_DELIMETER), {
+      fontFamily: nodeStyle.text.fontFamily,
+      fontSize: nodeStyle.text.fontSize
     });
     return text;
   });
 
-  // nodeGfx
-  (nodeGfx.hitArea as Circle).radius = nodeOuterSize;
+  const nodeCircleStatusTextureKey = [NODE_CIRCLE_STATUS, nodeStyle.circleStatus.size].join(DELIMETER)
+  const nodeCircleStatusTexture = textureCache.get(nodeCircleStatusTextureKey, () => {
+    const graphics = new Graphics();
+    graphics.beginFill(WHITE, 1.0, true);
+    graphics.drawCircle(nodeStyle.circleStatus.x, nodeStyle.circleStatus.y, nodeStyle.circleStatus.size)
+    return graphics;
+  });
 
-  // nodeGfx -> nodeCircle
-  const nodeCircle = nodeGfx.getChildByName!(NODE_CIRCLE) as Sprite;
-  nodeCircle.texture = nodeCircleTexture;
-  [nodeCircle.tint, nodeCircle.alpha] = colorToPixi(nodeStyle.color);
+  // nodeGfx -> hitArea
+  const hitArea = nodeGfx.hitArea as RoundedRectangle
+  hitArea.width = nodeStyle.width;
+  hitArea.height = nodeOuterSize;
+  hitArea.x = TOP_LEFT_CORNER_COEFFICIENT * nodeStyle.width;
+  hitArea.y = TOP_LEFT_CORNER_COEFFICIENT * nodeStyle.height;
 
-  // nodeGfx -> nodeCircleBorder
-  const nodeCircleBorder = nodeGfx.getChildByName!(NODE_CIRCLE_BORDER) as Sprite;
-  nodeCircleBorder.texture = nodeCircleBorderTexture;
-  [nodeCircleBorder.tint, nodeCircleBorder.alpha] = colorToPixi(nodeStyle.border.color);
+  // nodeGfx -> nodeRectangle
+  const nodeRectangle = nodeGfx.getChildByName!(NODE_RECTANGLE) as Sprite;
+  nodeRectangle.texture = nodeRectangleTexture;
+  [nodeRectangle.tint, nodeRectangle.alpha] = colorToPixi(nodeStyle.color);
+
+  // nodeGfx -> nodeRectangleBorder
+  const nodeRectangleBorder = nodeGfx.getChildByName!(NODE_RECTANGLE_BORDER) as Sprite;
+  nodeRectangleBorder.texture = nodeRectangleBorderTexture;
+  [nodeRectangleBorder.tint, nodeRectangleBorder.alpha] = colorToPixi(nodeStyle.border.color);
 
   // nodeGfx -> nodeIcon
   const nodeIcon = nodeGfx.getChildByName!(NODE_ICON) as Sprite;
   nodeIcon.texture = nodeIconTexture;
-  [nodeIcon.tint, nodeIcon.alpha] = colorToPixi(nodeStyle.icon.color);
+  [nodeIcon.tint, nodeIcon.alpha] = colorToPixi(nodeStyle.text.color);
   nodeGfx.addChild(nodeIcon);
+
+  // nodeGfx -> nodeCircleStatus
+  const nodeCircleStatus = nodeGfx.getChildByName!(NODE_CIRCLE_STATUS) as Sprite;
+  nodeCircleStatus.texture = nodeCircleStatusTexture;
+  [nodeCircleStatus.tint, nodeCircleStatus.alpha] = colorToPixi(nodeStyle.circleStatus.color);
+  nodeCircleStatus.x = nodeStyle.circleStatus.x;
+  nodeCircleStatus.y = nodeStyle.circleStatus.y;
+  nodeGfx.addChild(nodeCircleStatus);
 }
 
 export function updateNodeVisibility(nodeGfx: Container, zoomStep: number) {
-  // nodeGfx -> nodeCircleBorder
-  const nodeCircleBorder = nodeGfx.getChildByName!(NODE_CIRCLE_BORDER) as Sprite;
-  nodeCircleBorder.visible = nodeCircleBorder.visible && zoomStep >= 1;
+  // nodeGfx -> nodeRectangleBorder
+  const nodeRectangleBorder = nodeGfx.getChildByName!(NODE_RECTANGLE_BORDER) as Sprite;
+  nodeRectangleBorder.visible = nodeRectangleBorder.visible && zoomStep >= MAX_ZOOM_BORDER;
 
   // nodeGfx -> nodeIcon
   const nodeIcon = nodeGfx.getChildByName!(NODE_ICON) as Sprite;
-  nodeIcon.visible = nodeIcon.visible && zoomStep >= 2;
+  nodeIcon.visible = nodeIcon.visible && zoomStep >= MAX_ZOOM;
+
+  // nodeGfx -> nodeCircleStatus
+  const nodeCircleStatus = nodeGfx.getChildByName!(NODE_CIRCLE_STATUS) as Sprite;
+  nodeCircleStatus.visible = nodeIcon.visible && zoomStep >= MAX_ZOOM;
 }

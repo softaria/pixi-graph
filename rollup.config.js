@@ -2,9 +2,9 @@ import pkg from './package.json';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from 'rollup-plugin-typescript2';
-import visualizer from 'rollup-plugin-visualizer';
-import { terser } from 'rollup-plugin-terser';
-import dts from 'rollup-plugin-dts';
+import builtins from 'rollup-plugin-node-builtins';
+import globals from 'rollup-plugin-node-globals';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 const bundle = (format, filename, options = {}) => ({
   input: 'src/index.ts',
@@ -35,16 +35,31 @@ const bundle = (format, filename, options = {}) => ({
 export default [
   bundle('cjs', pkg.main),
   bundle('es', pkg.module),
-  bundle('umd', pkg.browser.replace('.min', ''), { resolve: true, stats: true }),
-  bundle('umd', pkg.browser, { resolve: true, minimize: true }),
+  bundle('iife', pkg.browser.replace('.min', ''), { resolve: true }),
   {
     input: 'src/index.ts',
     output: {
-      file: pkg.types,
-      format: 'es',
+      name: "PixiGraph",
+      file: pkg.browser.replace('.min', ''),
+      format: 'umd',
+      sourcemap: true,
     },
     plugins: [
-      dts(),
-    ],
-  },
-];
+      typescript({
+        typescript: require('typescript'),
+      }),
+      resolve({
+        browser: true,
+        module: true,
+        preferBuiltins: false
+      }),
+      commonjs({
+        include: 'node_modules/**'
+      }),
+      builtins(),
+      globals(),
+      nodePolyfills({'include': ['events', 'url']})
+    ]
+  }
+]
+ 

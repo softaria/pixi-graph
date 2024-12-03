@@ -28,7 +28,7 @@ export function createNodeLabel(nodeLabelGfx: Container) {
 }
 
 export function updateNodeLabelStyle(nodeLabelGfx: Container, nodeStyle: NodeStyle, textureCache: TextureCache) {
-  const nodeOuterSize = nodeStyle.size + nodeStyle.border.width;
+  const nodeOuterSize = nodeStyle.width + nodeStyle.border.width;
 
   const nodeLabelTextTextureKey = [NODE_LABEL_TEXT, nodeStyle.label.fontFamily, nodeStyle.label.fontSize, nodeStyle.label.content].join(DELIMETER);
   const nodeLabelTextTexture = textureCache.get(nodeLabelTextTextureKey, () => {

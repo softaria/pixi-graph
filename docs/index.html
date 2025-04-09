@@ -141,6 +141,7 @@ window.addEventListener('DOMContentLoaded', async () => {
           nodeLabel: { width: 200, height: 50 }
       }
       );
+  pixiGraph.autolayoutTree({ rankdir: 'TB', ranksep: 200, nodesep: 200 },{ width: 200, height: 50 })
 
   pixiGraph.on('nodeClick', (event, nodeKey) => console.log('nodeClick', event, nodeKey));
   pixiGraph.on('nodeMousemove', (event, nodeKey) => console.log('nodeMousemove', event, nodeKey));

@@ -125,7 +125,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   private onDocumentMouseMoveBound = this.onDocumentMouseMove.bind(this);
   private onDocumentMouseUpBound = this.onDocumentMouseUp.bind(this);
 
-  constructor(graphOptions: GraphOptions<NodeAttributes, EdgeAttributes>, layoutOptions: { graphLabel: GraphLabel, nodeLabel: Label }) {
+  constructor(graphOptions: GraphOptions<NodeAttributes, EdgeAttributes>) {
     super();
 
     this.container = graphOptions.container;
@@ -216,7 +216,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
       // initial draw
       this.createGraph();
-      this.autolayoutTree(layoutOptions.graphLabel, layoutOptions.nodeLabel);
+      // this.autolayoutTree(layoutOptions.graphLabel, layoutOptions.nodeLabel);
       this.resetView();
     });
   }

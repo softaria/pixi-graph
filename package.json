@@ -20,6 +20,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^1.1.4",
     "@pixi-essentials/cull": "^1.1.0",
     "@pixi/app": "^6.1.2",
     "@pixi/constants": "^6.0.2",

@@ -108,15 +108,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   ];
   await new FontFaceObserver('Material Icons').load();
 
-  const pixiGraph = new PixiGraph.PixiGraph({
-    container: document.getElementById('graph'),
-    graph,
-    style,
-    hoverStyle,
-    resources,
-  });
-
-  for (var i = 0; i < 1000; i ++) {
+  for (let i = 0; i < 1000; i ++) {
     graph.addNode(
       i.toString(),
       {
@@ -128,18 +120,27 @@ window.addEventListener('DOMContentLoaded', async () => {
       }
     )
   }
-  for (var i = 0; i < 100; i ++) {
-    const from = Math.floor(Math.abs(Math.random() * 1000)).toString()
-    const to = Math.floor(Math.abs(Math.random() * 1000)).toString()
-    graph.addEdge(from, to, {source: from, target: to, value: "1"})
+
+  for (let i = 0; i < 1000; i ++) {
+    const next = (Math.floor(i / 10));
+    if (next !== i) {
+      graph.addEdge(i.toString(), next.toString(), {source: i.toString(), value: "1", target: next.toString()})
+    }
   }
 
-
-  // layout
-  graph.forEachNode(node => {
-    graph.setNodeAttribute(node, 'x', Math.random() * 10000);
-    graph.setNodeAttribute(node, 'y', Math.random() * 10000);
-  });
+  const pixiGraph = new PixiGraph.PixiGraph(
+      {
+          container: document.getElementById('graph'),
+          graph,
+          style,
+          hoverStyle,
+          resources,
+      },
+      {
+          graphLabel: { rankdir: 'TB', ranksep: 200, nodesep: 200 },
+          nodeLabel: { width: 200, height: 50 }
+      }
+      );
 
   pixiGraph.on('nodeClick', (event, nodeKey) => console.log('nodeClick', event, nodeKey));
   pixiGraph.on('nodeMousemove', (event, nodeKey) => console.log('nodeMousemove', event, nodeKey));

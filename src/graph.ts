@@ -19,6 +19,7 @@ import { PixiNode } from './node';
 import { PixiEdge } from './edge';
 import { LINE_SCALE_MODE, settings } from '@pixi/graphics-smooth';
 import { WORLD_PADDING } from './constants/Constants';
+import dagre, {GraphLabel, Label} from '@dagrejs/dagre';
 
 Application.registerPlugin(TickerPlugin);
 Application.registerPlugin(AppLoaderPlugin);
@@ -124,14 +125,14 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   private onDocumentMouseMoveBound = this.onDocumentMouseMove.bind(this);
   private onDocumentMouseUpBound = this.onDocumentMouseUp.bind(this);
 
-  constructor(options: GraphOptions<NodeAttributes, EdgeAttributes>) {
+  constructor(graphOptions: GraphOptions<NodeAttributes, EdgeAttributes>) {
     super();
 
-    this.container = options.container;
-    this.graph = options.graph;
-    this.style = options.style;
-    this.hoverStyle = options.hoverStyle;
-    this.resources = options.resources;
+    this.container = graphOptions.container;
+    this.graph = graphOptions.graph;
+    this.style = graphOptions.style;
+    this.hoverStyle = graphOptions.hoverStyle;
+    this.resources = graphOptions.resources;
 
     if (!(this.container instanceof HTMLElement)) {
       throw new Error('container should be a HTMLElement');
@@ -215,6 +216,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
       // initial draw
       this.createGraph();
+      // this.autolayoutTree(layoutOptions.graphLabel, layoutOptions.nodeLabel);
       this.resetView();
     });
   }
@@ -598,6 +600,27 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.graph.forEachEdge(edgeKey => {
       const edge = this.edgeKeyToEdgeObject.get(edgeKey)!;
       edge.updateVisibility(zoomStep);
+    });
+  }
+
+  public autolayoutTree(graphLabel: GraphLabel, nodeLabel: Label) {
+    const dagreGraph = new dagre.graphlib.Graph({ directed: false, multigraph: false }).setDefaultEdgeLabel(() => ({}));
+    dagreGraph.setGraph({...graphLabel});
+    this.graph.forEachNode((node) => {
+      dagreGraph.setNode(node, {...nodeLabel});
+    });
+    this.graph.forEachEdge((_edge, _attr, source, target) => {
+      dagreGraph.setEdge(source, target);
+    });
+    dagre.layout(dagreGraph);
+    this.graph.forEachNode((node: string) => {
+      const nodeWithPosition = dagreGraph.node(node);
+      this.graph.setNodeAttribute(node, 'x', nodeWithPosition.x);
+      this.graph.setNodeAttribute(node, 'y', nodeWithPosition.y);
+    });
+    // Without this, edges render incorrectly until source or target node is moved =/
+    this.graph.forEachEdge((edge: string, _attrs: any, source: string, _target: string) => {
+      this.graph.setEdgeAttribute(edge, 'source', source);
     });
   }
 }

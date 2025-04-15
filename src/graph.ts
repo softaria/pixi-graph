@@ -603,7 +603,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     });
   }
 
-  public autolayoutTree(graphLabel: GraphLabel, nodeLabel: Label) {
+  public autolayoutTree(graphLabel: GraphLabel, nodeLabel: Label, excludedNodes?: string[]) {
     const dagreGraph = new dagre.graphlib.Graph({ directed: false, multigraph: false }).setDefaultEdgeLabel(() => ({}));
     dagreGraph.setGraph({...graphLabel});
     this.graph.forEachNode((node) => {
@@ -614,6 +614,9 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     });
     dagre.layout(dagreGraph);
     this.graph.forEachNode((node: string) => {
+      if (excludedNodes && excludedNodes.includes(node)) {
+        return
+      }
       const nodeWithPosition = dagreGraph.node(node);
       this.graph.setNodeAttribute(node, 'x', nodeWithPosition.x);
       this.graph.setNodeAttribute(node, 'y', nodeWithPosition.y);

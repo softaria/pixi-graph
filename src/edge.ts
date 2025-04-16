@@ -40,11 +40,28 @@ export class PixiEdge extends TypedEmitter<PixiEdgeEvents> {
     return edgeGfx;
   }
 
-  updatePosition(sourceNodePosition: IPointData, targetNodePosition: IPointData) {
-    const position = { x: (sourceNodePosition.x + targetNodePosition.x) / 2, y: (sourceNodePosition.y + targetNodePosition.y) / 2 };
-    const rotation = -Math.atan2(targetNodePosition.x - sourceNodePosition.x, targetNodePosition.y - sourceNodePosition.y);
-    const length = Math.hypot(targetNodePosition.x - sourceNodePosition.x, targetNodePosition.y - sourceNodePosition.y);
-    this.edgeGfx.position.copyFrom(position);
+  updatePosition(sourceNodePosition: IPointData, targetNodePosition: IPointData, sourceNodeHeight: number, targetNodeHeight: number) {
+    const sourcePoint = {
+      x: sourceNodePosition.x,
+      y: sourceNodePosition.y + sourceNodeHeight / 2,
+    };
+    const targetPoint = {
+      x: targetNodePosition.x,
+      y: targetNodePosition.y - targetNodeHeight / 2,
+    };
+    const edgeCenter = {
+      x: (sourcePoint.x + targetPoint.x) / 2,
+      y: (sourcePoint.y + targetPoint.y) / 2,
+    };
+    const rotation = -Math.atan2(
+        targetPoint.x - sourcePoint.x,
+        targetPoint.y - sourcePoint.y
+    );
+    const length = Math.hypot(
+        targetPoint.x - sourcePoint.x,
+        targetPoint.y - sourcePoint.y
+    );
+    this.edgeGfx.position.copyFrom(edgeCenter);
     this.edgeGfx.rotation = rotation;
     this.edgeGfx.height = length;
   }

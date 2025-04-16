@@ -570,7 +570,10 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     const sourceNodePosition = { x: sourceNodeAttributes.x, y: sourceNodeAttributes.y };
     const targetNodePosition = { x: targetNodeAttributes.x, y: targetNodeAttributes.y };
-    edge.updatePosition(sourceNodePosition, targetNodePosition);
+    const nodeStyleDefinitions = [DEFAULT_STYLE.node, this.style.node, undefined];
+    const targetNodeStyle = resolveStyleDefinitions(nodeStyleDefinitions, targetNodeAttributes);
+    const sourceNodeStyle = resolveStyleDefinitions(nodeStyleDefinitions, sourceNodeAttributes);
+    edge.updatePosition(sourceNodePosition, targetNodePosition, sourceNodeStyle.height, targetNodeStyle.height);
 
     const edgeStyleDefinitions = [DEFAULT_STYLE.edge, this.style.edge, edge.hovered ? this.hoverStyle.edge : undefined];
     const edgeStyle = resolveStyleDefinitions(edgeStyleDefinitions, edgeAttributes);

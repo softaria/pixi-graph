@@ -128,19 +128,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  const pixiGraph = new PixiGraph.PixiGraph(
-      {
-          container: document.getElementById('graph'),
-          graph,
-          style,
-          hoverStyle,
-          resources,
-      },
-      {
-          graphLabel: { rankdir: 'TB', ranksep: 200, nodesep: 200 },
-          nodeLabel: { width: 200, height: 50 }
-      }
-      );
+  const pixiGraph = new PixiGraph.PixiGraph({
+    container: document.getElementById('graph'),
+    graph,
+    style,
+    hoverStyle,
+    resources,
+  });
   pixiGraph.autolayoutTree({ rankdir: 'TB', ranksep: 200, nodesep: 200 },{ width: 200, height: 50 })
 
   pixiGraph.on('nodeClick', (event, nodeKey) => console.log('nodeClick', event, nodeKey));

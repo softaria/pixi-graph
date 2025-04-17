@@ -216,7 +216,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
       // initial draw
       this.createGraph();
-      // this.autolayoutTree(layoutOptions.graphLabel, layoutOptions.nodeLabel);
       this.resetView();
     });
   }
@@ -606,7 +605,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     });
   }
 
-  public autolayoutTree(graphLabel: GraphLabel, nodeLabel: Label, nodesWhitelist?: string[]) {
+  public autolayoutTree(graphLabel: GraphLabel, nodeLabel: Label) {
     const dagreGraph = new dagre.graphlib.Graph({ directed: false, multigraph: false }).setDefaultEdgeLabel(() => ({}));
     dagreGraph.setGraph({...graphLabel});
     this.graph.forEachNode((node) => {
@@ -617,9 +616,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     });
     dagre.layout(dagreGraph);
     this.graph.forEachNode((node: string) => {
-      if (nodesWhitelist !== undefined && !nodesWhitelist.includes(node)) {
-        return
-      }
       const nodeWithPosition = dagreGraph.node(node);
       this.graph.setNodeAttribute(node, 'x', nodeWithPosition.x);
       this.graph.setNodeAttribute(node, 'y', nodeWithPosition.y);

@@ -1,24 +1,23 @@
-import { Application } from '@pixi/app';
-import { TickerPlugin } from '@pixi/ticker';
-import { AppLoaderPlugin, Loader } from '@pixi/loaders';
-import { BitmapFontLoader } from '@pixi/text-bitmap';
-import { Renderer, BatchRenderer } from '@pixi/core';
-import { InteractionManager } from '@pixi/interaction';
-import { Container } from '@pixi/display';
-import { Point, IPointData } from '@pixi/math';
-import { IAddOptions } from '@pixi/loaders';
-import { Viewport } from 'pixi-viewport';
-import { Cull } from '@pixi-essentials/cull';
-import { AbstractGraph } from 'graphology-types';
-import { TypedEmitter } from 'tiny-typed-emitter';
-import { GraphStyleDefinition, resolveStyleDefinitions } from './utils/style';
-import { TextType } from './utils/text';
-import { BaseNodeAttributes, BaseEdgeAttributes } from './attributes';
-import { TextureCache } from './texture-cache';
-import { PixiNode } from './node';
-import { PixiEdge } from './edge';
-import { LINE_SCALE_MODE, settings } from '@pixi/graphics-smooth';
-import { WORLD_PADDING } from './constants/Constants';
+import {Application} from '@pixi/app';
+import {TickerPlugin} from '@pixi/ticker';
+import {AppLoaderPlugin, IAddOptions, Loader} from '@pixi/loaders';
+import {BitmapFontLoader} from '@pixi/text-bitmap';
+import {BatchRenderer, Renderer} from '@pixi/core';
+import {InteractionManager} from '@pixi/interaction';
+import {Container} from '@pixi/display';
+import {IPointData, Point} from '@pixi/math';
+import {Viewport} from 'pixi-viewport';
+import {Cull} from '@pixi-essentials/cull';
+import {AbstractGraph} from 'graphology-types';
+import {TypedEmitter} from 'tiny-typed-emitter';
+import {GraphStyleDefinition, resolveStyleDefinitions} from './utils/style';
+import {TextType} from './utils/text';
+import {BaseEdgeAttributes, BaseNodeAttributes} from './attributes';
+import {TextureCache} from './texture-cache';
+import {PixiNode} from './node';
+import {PixiEdge} from './edge';
+import {LINE_SCALE_MODE, settings} from '@pixi/graphics-smooth';
+import {WORLD_PADDING} from './constants/Constants';
 import dagre, {GraphLabel, Label} from '@dagrejs/dagre';
 
 Application.registerPlugin(TickerPlugin);
@@ -572,7 +571,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     const nodeStyleDefinitions = [DEFAULT_STYLE.node, this.style.node, undefined];
     const targetNodeStyle = resolveStyleDefinitions(nodeStyleDefinitions, targetNodeAttributes);
     const sourceNodeStyle = resolveStyleDefinitions(nodeStyleDefinitions, sourceNodeAttributes);
-    edge.updatePosition(sourceNodePosition, targetNodePosition, sourceNodeStyle.height, targetNodeStyle.height);
+    edge.updatePosition(sourceNodePosition, targetNodePosition, sourceNodeStyle.width, sourceNodeStyle.height, targetNodeStyle.width, targetNodeStyle.height);
 
     const edgeStyleDefinitions = [DEFAULT_STYLE.edge, this.style.edge, edge.hovered ? this.hoverStyle.edge : undefined];
     const edgeStyle = resolveStyleDefinitions(edgeStyleDefinitions, edgeAttributes);
@@ -624,5 +623,13 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.graph.forEachEdge((edge: string, _attrs: any, source: string, _target: string) => {
       this.graph.setEdgeAttribute(edge, 'source', source);
     });
+  }
+
+  public convertScreenToWorld(screenX: number, screenY: number) {
+    const rect = this.app.view.getBoundingClientRect();
+    const x = screenX - rect.left;
+    const y = screenY - rect.top;
+    const screenPoint = new Point(x, y);
+    return this.viewport.toWorld(screenPoint)
   }
 }

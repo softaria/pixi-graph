@@ -39,13 +39,11 @@ export function createNode(nodeGfx: Container) {
 }
 
 export function updateNodeStyle(nodeGfx: Container, nodeStyle: NodeStyle, textureCache: TextureCache) {
-  const nodeOuterSize = nodeStyle.width + nodeStyle.border.width;
-
   const nodeRectangleTextureKey = [NODE_RECTANGLE, nodeStyle.width, nodeStyle.height, nodeStyle.roundingFactor].join(DELIMETER);
   const nodeRectangleTexture = textureCache.get(nodeRectangleTextureKey, () => {
     const graphics = new Graphics();
     graphics.beginFill(WHITE, 1.0, true);
-    graphics.drawRoundedRect(nodeStyle.width, nodeStyle.width, nodeStyle.width, nodeStyle.height, nodeStyle.width * nodeStyle.roundingFactor);
+    graphics.drawRoundedRect(nodeStyle.width, nodeStyle.height, nodeStyle.width, nodeStyle.height, nodeStyle.width * nodeStyle.roundingFactor);
     return graphics;
   });
 
@@ -53,7 +51,7 @@ export function updateNodeStyle(nodeGfx: Container, nodeStyle: NodeStyle, textur
   const nodeRectangleBorderTexture = textureCache.get(nodeRectangleBorderTextureKey, () => {
     const graphics = new Graphics();
     graphics.lineStyle(nodeStyle.border.width, WHITE);
-    graphics.drawRoundedRect(nodeOuterSize, nodeOuterSize, nodeStyle.width, nodeStyle.height, nodeStyle.width * nodeStyle.roundingFactor);
+    graphics.drawRoundedRect(nodeStyle.width, nodeStyle.height, nodeStyle.width, nodeStyle.height, nodeStyle.width * nodeStyle.roundingFactor);
     return graphics;
   });
 
@@ -77,7 +75,7 @@ export function updateNodeStyle(nodeGfx: Container, nodeStyle: NodeStyle, textur
   // nodeGfx -> hitArea
   const hitArea = nodeGfx.hitArea as RoundedRectangle
   hitArea.width = nodeStyle.width;
-  hitArea.height = nodeOuterSize;
+  hitArea.height = nodeStyle.height;
   hitArea.x = TOP_LEFT_CORNER_COEFFICIENT * nodeStyle.width;
   hitArea.y = TOP_LEFT_CORNER_COEFFICIENT * nodeStyle.height;
 

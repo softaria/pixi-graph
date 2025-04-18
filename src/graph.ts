@@ -331,7 +331,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   }
 
   private hoverNode(nodeKey: string) {
-    console.log(`nodeKey = ${nodeKey}`)
     const node = this.nodeKeyToNodeObject.get(nodeKey)!;
     if (node.hovered) {
       return;
@@ -351,11 +350,9 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.nodeLabelLayer.addChild(node.nodeLabelPlaceholderGfx);
     this.frontNodeLayer.addChild(node.nodeGfx);
     this.frontNodeLabelLayer.addChild(node.nodeLabelGfx);
-    console.log("hoverNode")
   }
 
   private unhoverNode(nodeKey: string) {
-    console.log(`nodeKey = ${nodeKey}`)
     const node = this.nodeKeyToNodeObject.get(nodeKey)!;
     if (!node.hovered) {
       return;

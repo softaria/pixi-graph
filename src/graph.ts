@@ -74,18 +74,18 @@ export interface GraphOptions<NodeAttributes extends BaseNodeAttributes = BaseNo
 }
 
 interface PixiGraphEvents {
-  nodeClick: (event: MouseEvent, nodeKey: string) => void;
-  nodeMousemove: (event: MouseEvent, nodeKey: string) => void;
-  nodeMouseover: (event: MouseEvent, nodeKey: string) => void;
-  nodeMouseout: (event: MouseEvent, nodeKey: string) => void;
-  nodeMousedown: (event: MouseEvent, nodeKey: string) => void;
-  nodeMouseup: (event: MouseEvent, nodeKey: string) => void;
-  edgeClick: (event: MouseEvent, edgeKey: string) => void;
-  edgeMousemove: (event: MouseEvent, edgeKey: string) => void;
-  edgeMouseover: (event: MouseEvent, edgeKey: string) => void;
-  edgeMouseout: (event: MouseEvent, edgeKey: string) => void;
-  edgeMousedown: (event: MouseEvent, edgeKey: string) => void;
-  edgeMouseup: (event: MouseEvent, edgeKey: string) => void;
+  nodeClick: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  nodeMousemove: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  nodeMouseover: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  nodeMouseout: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  nodeMousedown: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  nodeMouseup: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  edgeClick: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
+  edgeMousemove: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
+  edgeMouseover: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
+  edgeMouseout: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
+  edgeMousedown: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
+  edgeMouseup: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
 }
 
 export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> extends TypedEmitter<PixiGraphEvents> {
@@ -331,6 +331,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   }
 
   private hoverNode(nodeKey: string) {
+    console.log(`nodeKey = ${nodeKey}`)
     const node = this.nodeKeyToNodeObject.get(nodeKey)!;
     if (node.hovered) {
       return;
@@ -350,9 +351,11 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.nodeLabelLayer.addChild(node.nodeLabelPlaceholderGfx);
     this.frontNodeLayer.addChild(node.nodeGfx);
     this.frontNodeLabelLayer.addChild(node.nodeLabelGfx);
+    console.log("hoverNode")
   }
 
   private unhoverNode(nodeKey: string) {
+    console.log(`nodeKey = ${nodeKey}`)
     const node = this.nodeKeyToNodeObject.get(nodeKey)!;
     if (!node.hovered) {
       return;
@@ -631,5 +634,31 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     const y = screenY - rect.top;
     const screenPoint = new Point(x, y);
     return this.viewport.toWorld(screenPoint)
+  }
+
+  public elevateNode(nodeKey: string) {
+    const node = this.nodeKeyToNodeObject.get(nodeKey)!;
+    const nodeIndex = this.nodeLayer.getChildIndex(node.nodeGfx);
+    this.nodeLayer.removeChildAt(nodeIndex);
+    this.nodeLabelLayer.removeChildAt(nodeIndex);
+    this.frontNodeLayer.removeChildAt(nodeIndex);
+    this.frontNodeLabelLayer.removeChildAt(nodeIndex);
+    this.nodeLayer.addChild(node.nodePlaceholderGfx);
+    this.nodeLabelLayer.addChild(node.nodeLabelPlaceholderGfx);
+    this.frontNodeLayer.addChild(node.nodeGfx);
+    this.frontNodeLabelLayer.addChild(node.nodeLabelGfx);
+  }
+
+  public lowerNode(nodeKey: string) {
+    const node = this.nodeKeyToNodeObject.get(nodeKey)!;
+    const nodeIndex = this.frontNodeLayer.getChildIndex(node.nodeGfx);
+    this.nodeLayer.removeChildAt(nodeIndex);
+    this.nodeLabelLayer.removeChildAt(nodeIndex);
+    this.frontNodeLayer.removeChildAt(nodeIndex);
+    this.frontNodeLabelLayer.removeChildAt(nodeIndex);
+    this.nodeLayer.addChild(node.nodeGfx);
+    this.nodeLabelLayer.addChild(node.nodeLabelGfx);
+    this.frontNodeLayer.addChild(node.nodePlaceholderGfx);
+    this.frontNodeLabelLayer.addChild(node.nodeLabelPlaceholderGfx);
   }
 }

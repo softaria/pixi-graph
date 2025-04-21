@@ -12,6 +12,7 @@ export const NODE_RECTANGLE = 'NODE_RECTANGLE';
 export const NODE_RECTANGLE_BORDER = 'NODE_RECTANGLE_BORDER';
 export const NODE_ICON = 'NODE_ICON';
 export const NODE_CIRCLE_STATUS = 'NODE_CIRCLE_STATUS';
+export const NODE_TEXT_STATUS = 'NODE_TEXT_STATUS';
 
 // edge 
 export const EDGE_LINE = 'EDGE_LINE';

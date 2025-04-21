@@ -1,15 +1,28 @@
-import { Container } from '@pixi/display';
-import { RoundedRectangle } from '@pixi/math';
-import { Sprite } from '@pixi/sprite';
-import { SmoothGraphics as Graphics } from '@pixi/graphics-smooth';
+import {Container} from '@pixi/display';
+import {RoundedRectangle} from '@pixi/math';
+import {Sprite} from '@pixi/sprite';
+import {SmoothGraphics as Graphics} from '@pixi/graphics-smooth';
 import '@pixi/mixin-get-child-by-name';
-import { colorToPixi } from '../utils/color';
-import { NodeStyle } from '../utils/style';
-import { textToPixi } from '../utils/text';
-import { TextureCache } from '../texture-cache';
-import { CENTER_POSITION, DELIMETER, MAX_ZOOM, MAX_ZOOM_BORDER, NODE_CIRCLE_STATUS, NODE_ICON, NODE_RECTANGLE, NODE_RECTANGLE_BORDER, TEXT_DELIMETER, TOP_LEFT_CORNER_COEFFICIENT, WHITE } from '../constants/Constants';
+import {colorToPixi} from '../utils/color';
+import {NodeStyle} from '../utils/style';
+import {textToPixi} from '../utils/text';
+import {TextureCache} from '../texture-cache';
+import {
+  CENTER_POSITION,
+  DELIMETER,
+  MAX_ZOOM,
+  MAX_ZOOM_BORDER,
+  NODE_CIRCLE_STATUS,
+  NODE_ICON,
+  NODE_RECTANGLE,
+  NODE_RECTANGLE_BORDER,
+  NODE_TEXT_STATUS,
+  TEXT_DELIMETER,
+  TOP_LEFT_CORNER_COEFFICIENT,
+  WHITE
+} from '../constants/Constants';
 
-export function createNode(nodeGfx: Container) {
+export function createNode(nodeGfx: Container, textStatusesCount: number) {
   // nodeGfx
   nodeGfx.hitArea = new RoundedRectangle(0, 0);
 
@@ -36,6 +49,14 @@ export function createNode(nodeGfx: Container) {
   nodeCircleStatus.name = NODE_CIRCLE_STATUS;
   nodeCircleStatus.anchor.set(CENTER_POSITION);
   nodeGfx.addChild(nodeCircleStatus);
+
+  // nodeGfx -> nodeTextStatus
+  for (let i = 0; i < textStatusesCount; ++i) {
+    const nodeTextStatus = new Sprite();
+    nodeTextStatus.name = NODE_TEXT_STATUS + `_${i}`;
+    nodeTextStatus.anchor.set(CENTER_POSITION);
+    nodeGfx.addChild(nodeTextStatus);
+  }
 }
 
 export function updateNodeStyle(nodeGfx: Container, nodeStyle: NodeStyle, textureCache: TextureCache) {
@@ -57,11 +78,10 @@ export function updateNodeStyle(nodeGfx: Container, nodeStyle: NodeStyle, textur
 
   const nodeIconTextureKey = [NODE_ICON, nodeStyle.text.fontFamily, nodeStyle.text.fontSize, ...nodeStyle.text.content].join(DELIMETER);
   const nodeIconTexture = textureCache.get(nodeIconTextureKey, () => {
-    const text = textToPixi(nodeStyle.text.type, nodeStyle.text.content.join(TEXT_DELIMETER), {
+    return textToPixi(nodeStyle.text.type, nodeStyle.text.content.join(TEXT_DELIMETER), {
       fontFamily: nodeStyle.text.fontFamily,
       fontSize: nodeStyle.text.fontSize
     });
-    return text;
   });
 
   const nodeCircleStatusTextureKey = [NODE_CIRCLE_STATUS, nodeStyle.circleStatus.size].join(DELIMETER)
@@ -71,6 +91,14 @@ export function updateNodeStyle(nodeGfx: Container, nodeStyle: NodeStyle, textur
     graphics.drawCircle(nodeStyle.circleStatus.x, nodeStyle.circleStatus.y, nodeStyle.circleStatus.size)
     return graphics;
   });
+
+  const nodeTextStatusTextures = nodeStyle.textStatus.map((textStatus, index) => {
+    const nodeTextStatusTextureKey = [NODE_TEXT_STATUS, textStatus.style.fontSize, index].join(DELIMETER);
+    return textureCache.get(nodeTextStatusTextureKey, () => {
+      return textToPixi(textStatus.type, textStatus.text, textStatus.style);
+    });
+  })
+
 
   // nodeGfx -> hitArea
   const hitArea = nodeGfx.hitArea as RoundedRectangle
@@ -102,6 +130,16 @@ export function updateNodeStyle(nodeGfx: Container, nodeStyle: NodeStyle, textur
   nodeCircleStatus.x = nodeStyle.circleStatus.x;
   nodeCircleStatus.y = nodeStyle.circleStatus.y;
   nodeGfx.addChild(nodeCircleStatus);
+
+  // nodeGfx -> nodeTextStatus
+  nodeTextStatusTextures.forEach((nodeTextStatus, index) =>{
+    const nodeText = nodeGfx.getChildByName!(NODE_TEXT_STATUS + `_${index}`) as Sprite;
+    nodeText.x = nodeStyle.textStatus[index].x;
+    nodeText.y = nodeStyle.textStatus[index].y;
+    nodeText.texture = nodeTextStatus;
+    [nodeText.tint, nodeText.alpha] = colorToPixi(nodeStyle.textStatus[index].color);
+    nodeGfx.addChild(nodeText);
+  })
 }
 
 export function updateNodeVisibility(nodeGfx: Container, zoomStep: number) {

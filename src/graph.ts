@@ -450,7 +450,9 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   }
 
   private createNode(nodeKey: string, nodeAttributes: NodeAttributes) {
-    const node = new PixiNode();
+    const nodeStyleDefinitions = [DEFAULT_STYLE.node, this.style.node];
+    const nodeStyle = resolveStyleDefinitions(nodeStyleDefinitions, nodeAttributes);
+    const node: PixiNode = new PixiNode(nodeStyle.textStatus?.length || 0);
     node.on('mousemove', (event: MouseEvent) => {
       this.emit('nodeMousemove', event, nodeKey);
     });

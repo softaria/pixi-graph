@@ -471,13 +471,17 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     node.on('mousedown', (event: MouseEvent) => {
       this.mousedownNodeKey = nodeKey;
       this.enableNodeDragging();
-      this.emit('nodeMousedown', event, nodeKey);
+      setTimeout(() => {
+        this.emit('nodeMousedown', event, nodeKey);
+      }, 0);
     });
     node.on('mouseup', (event: MouseEvent) => {
       this.emit('nodeMouseup', event, nodeKey);
       // why native click event doesn't work?
       if (this.mousedownNodeKey === nodeKey) {
-        this.emit('nodeClick', event, nodeKey);
+        setTimeout(() => {
+          this.emit('nodeClick', event, nodeKey);
+        }, 0);
       }
     });
     this.nodeLayer.addChild(node.nodeGfx);

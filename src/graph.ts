@@ -150,6 +150,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.container.appendChild(this.app.view);
 
     this.app.renderer.plugins.interaction.moveWhenInside = true;
+    this.app.view.addEventListener('mouseleave', this.onDocumentMouseUpBound);
     this.app.view.addEventListener('wheel', event => { event.preventDefault() });
 
     this.textureCache = new TextureCache(this.app.renderer);

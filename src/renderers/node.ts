@@ -93,7 +93,7 @@ export function updateNodeStyle(nodeGfx: Container, nodeStyle: NodeStyle, textur
   });
 
   const nodeTextStatusTextures = nodeStyle.textStatus.map((textStatus, index) => {
-    const nodeTextStatusTextureKey = [NODE_TEXT_STATUS, textStatus.style.fontSize, index].join(DELIMETER);
+    const nodeTextStatusTextureKey = [`${NODE_TEXT_STATUS}_${index}`, textStatus.text, textStatus.style.fontSize, textStatus.color].join(DELIMETER);
     return textureCache.get(nodeTextStatusTextureKey, () => {
       return textToPixi(textStatus.type, textStatus.text, textStatus.style);
     });
@@ -133,7 +133,7 @@ export function updateNodeStyle(nodeGfx: Container, nodeStyle: NodeStyle, textur
 
   // nodeGfx -> nodeTextStatus
   nodeTextStatusTextures.forEach((nodeTextStatus, index) =>{
-    const nodeText = nodeGfx.getChildByName!(NODE_TEXT_STATUS + `_${index}`) as Sprite;
+    const nodeText = nodeGfx.getChildByName!(`${NODE_TEXT_STATUS}_${index}`) as Sprite;
     nodeText.x = nodeStyle.textStatus[index].x;
     nodeText.y = nodeStyle.textStatus[index].y;
     nodeText.texture = nodeTextStatus;

@@ -41,7 +41,7 @@ export interface GraphStyle {
       type: TextType;
       x: number;
       y: number;
-      style: ITextStyle;
+      style: Partial<ITextStyle>;
     }[];
   };
   edge: {

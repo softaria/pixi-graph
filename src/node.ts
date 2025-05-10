@@ -23,16 +23,16 @@ export class PixiNode extends TypedEmitter<PixiNodeEvents> {
 
   hovered: boolean = false;
 
-  constructor() {
+  constructor(textStatusesCount: number) {
     super();
 
-    this.nodeGfx = this.createNode();
+    this.nodeGfx = this.createNode(textStatusesCount);
     this.nodeLabelGfx = this.createNodeLabel();
     this.nodePlaceholderGfx = new Container();
     this.nodeLabelPlaceholderGfx = new Container();
   }
 
-  private createNode() {
+  private createNode(textStatusesCount: number) {
     const nodeGfx = new Container();
     nodeGfx.interactive = true;
     nodeGfx.buttonMode = true;
@@ -41,7 +41,7 @@ export class PixiNode extends TypedEmitter<PixiNodeEvents> {
     nodeGfx.on('mouseout', (event: InteractionEvent) => this.emit('mouseout', event.data.originalEvent as MouseEvent));
     nodeGfx.on('mousedown', (event: InteractionEvent) => this.emit('mousedown', event.data.originalEvent as MouseEvent));
     nodeGfx.on('mouseup', (event: InteractionEvent) => this.emit('mouseup', event.data.originalEvent as MouseEvent));
-    createNode(nodeGfx);
+    createNode(nodeGfx, textStatusesCount);
     return nodeGfx;
   }
 

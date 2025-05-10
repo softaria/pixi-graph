@@ -1,6 +1,7 @@
 import deepmerge from 'deepmerge';
-import { BaseNodeAttributes, BaseEdgeAttributes } from '../attributes';
-import { TextType } from './text';
+import {BaseEdgeAttributes, BaseNodeAttributes} from '../attributes';
+import {TextType} from './text';
+import {ITextStyle} from "@pixi/text";
 
 export interface GraphStyle {
   node: {
@@ -33,7 +34,15 @@ export interface GraphStyle {
       color: string;
       x: number;
       y: number;
-    }
+    };
+    textStatus: {
+      text: string;
+      color: string;
+      type: TextType;
+      x: number;
+      y: number;
+      style: Partial<ITextStyle>;
+    }[];
   };
   edge: {
     width: number;
@@ -78,6 +87,5 @@ export function resolveStyleDefinition<Style, Attributes>(styleDefinition: Style
 
 export function resolveStyleDefinitions<Style, Attributes>(styleDefinitions: (StyleDefinition<Style, Attributes> | undefined)[], attributes: Attributes): Style {
   const styles = styleDefinitions.filter(x => !!x).map(styleDefinition => resolveStyleDefinition(styleDefinition!, attributes));
-  const style = deepmerge.all<Style>(styles);
-  return style;
+  return deepmerge.all<Style>(styles);
 }

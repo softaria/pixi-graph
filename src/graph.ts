@@ -1,24 +1,23 @@
-import { Application } from '@pixi/app';
-import { TickerPlugin } from '@pixi/ticker';
-import { AppLoaderPlugin, Loader } from '@pixi/loaders';
-import { BitmapFontLoader } from '@pixi/text-bitmap';
-import { Renderer, BatchRenderer } from '@pixi/core';
-import { InteractionManager } from '@pixi/interaction';
-import { Container } from '@pixi/display';
-import { Point, IPointData } from '@pixi/math';
-import { IAddOptions } from '@pixi/loaders';
-import { Viewport } from 'pixi-viewport';
-import { Cull } from '@pixi-essentials/cull';
-import { AbstractGraph } from 'graphology-types';
-import { TypedEmitter } from 'tiny-typed-emitter';
-import { GraphStyleDefinition, resolveStyleDefinitions } from './utils/style';
-import { TextType } from './utils/text';
-import { BaseNodeAttributes, BaseEdgeAttributes } from './attributes';
-import { TextureCache } from './texture-cache';
-import { PixiNode } from './node';
-import { PixiEdge } from './edge';
-import { LINE_SCALE_MODE, settings } from '@pixi/graphics-smooth';
-import { WORLD_PADDING } from './constants/Constants';
+import {Application} from '@pixi/app';
+import {TickerPlugin} from '@pixi/ticker';
+import {AppLoaderPlugin, IAddOptions, Loader} from '@pixi/loaders';
+import {BitmapFontLoader} from '@pixi/text-bitmap';
+import {BatchRenderer, Renderer} from '@pixi/core';
+import {InteractionManager} from '@pixi/interaction';
+import {Container} from '@pixi/display';
+import {IPointData, Point} from '@pixi/math';
+import {Viewport} from 'pixi-viewport';
+import {Cull} from '@pixi-essentials/cull';
+import {AbstractGraph} from 'graphology-types';
+import {TypedEmitter} from 'tiny-typed-emitter';
+import {GraphStyleDefinition, resolveStyleDefinitions} from './utils/style';
+import {TextType} from './utils/text';
+import {BaseEdgeAttributes, BaseNodeAttributes} from './attributes';
+import {TextureCache} from './texture-cache';
+import {PixiNode} from './node';
+import {PixiEdge} from './edge';
+import {LINE_SCALE_MODE, settings} from '@pixi/graphics-smooth';
+import {WORLD_PADDING} from './constants/Constants';
 import dagre, {GraphLabel, Label} from '@dagrejs/dagre';
 
 Application.registerPlugin(TickerPlugin);
@@ -75,18 +74,18 @@ export interface GraphOptions<NodeAttributes extends BaseNodeAttributes = BaseNo
 }
 
 interface PixiGraphEvents {
-  nodeClick: (event: MouseEvent, nodeKey: string) => void;
-  nodeMousemove: (event: MouseEvent, nodeKey: string) => void;
-  nodeMouseover: (event: MouseEvent, nodeKey: string) => void;
-  nodeMouseout: (event: MouseEvent, nodeKey: string) => void;
-  nodeMousedown: (event: MouseEvent, nodeKey: string) => void;
-  nodeMouseup: (event: MouseEvent, nodeKey: string) => void;
-  edgeClick: (event: MouseEvent, edgeKey: string) => void;
-  edgeMousemove: (event: MouseEvent, edgeKey: string) => void;
-  edgeMouseover: (event: MouseEvent, edgeKey: string) => void;
-  edgeMouseout: (event: MouseEvent, edgeKey: string) => void;
-  edgeMousedown: (event: MouseEvent, edgeKey: string) => void;
-  edgeMouseup: (event: MouseEvent, edgeKey: string) => void;
+  nodeClick: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  nodeMousemove: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  nodeMouseover: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  nodeMouseout: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  nodeMousedown: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  nodeMouseup: (this: PixiGraph, event: MouseEvent, nodeKey: string) => void;
+  edgeClick: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
+  edgeMousemove: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
+  edgeMouseover: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
+  edgeMouseout: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
+  edgeMousedown: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
+  edgeMouseup: (this: PixiGraph, event: MouseEvent, edgeKey: string) => void;
 }
 
 export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> extends TypedEmitter<PixiGraphEvents> {
@@ -151,6 +150,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.container.appendChild(this.app.view);
 
     this.app.renderer.plugins.interaction.moveWhenInside = true;
+    this.app.view.addEventListener('mouseleave', this.onDocumentMouseUpBound);
     this.app.view.addEventListener('wheel', event => { event.preventDefault() });
 
     this.textureCache = new TextureCache(this.app.renderer);
@@ -216,7 +216,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
       // initial draw
       this.createGraph();
-      // this.autolayoutTree(layoutOptions.graphLabel, layoutOptions.nodeLabel);
       this.resetView();
     });
   }
@@ -452,7 +451,9 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   }
 
   private createNode(nodeKey: string, nodeAttributes: NodeAttributes) {
-    const node = new PixiNode();
+    const nodeStyleDefinitions = [DEFAULT_STYLE.node, this.style.node];
+    const nodeStyle = resolveStyleDefinitions(nodeStyleDefinitions, nodeAttributes);
+    const node: PixiNode = new PixiNode(nodeStyle.textStatus?.length || 0);
     node.on('mousemove', (event: MouseEvent) => {
       this.emit('nodeMousemove', event, nodeKey);
     });
@@ -471,13 +472,17 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     node.on('mousedown', (event: MouseEvent) => {
       this.mousedownNodeKey = nodeKey;
       this.enableNodeDragging();
-      this.emit('nodeMousedown', event, nodeKey);
+      setTimeout(() => {
+        this.emit('nodeMousedown', event, nodeKey);
+      }, 0);
     });
     node.on('mouseup', (event: MouseEvent) => {
       this.emit('nodeMouseup', event, nodeKey);
       // why native click event doesn't work?
       if (this.mousedownNodeKey === nodeKey) {
-        this.emit('nodeClick', event, nodeKey);
+        setTimeout(() => {
+          this.emit('nodeClick', event, nodeKey);
+        }, 0);
       }
     });
     this.nodeLayer.addChild(node.nodeGfx);
@@ -570,7 +575,10 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     const sourceNodePosition = { x: sourceNodeAttributes.x, y: sourceNodeAttributes.y };
     const targetNodePosition = { x: targetNodeAttributes.x, y: targetNodeAttributes.y };
-    edge.updatePosition(sourceNodePosition, targetNodePosition);
+    const nodeStyleDefinitions = [DEFAULT_STYLE.node, this.style.node, undefined];
+    const targetNodeStyle = resolveStyleDefinitions(nodeStyleDefinitions, targetNodeAttributes);
+    const sourceNodeStyle = resolveStyleDefinitions(nodeStyleDefinitions, sourceNodeAttributes);
+    edge.updatePosition(sourceNodePosition, targetNodePosition, sourceNodeStyle.width, sourceNodeStyle.height, targetNodeStyle.width, targetNodeStyle.height);
 
     const edgeStyleDefinitions = [DEFAULT_STYLE.edge, this.style.edge, edge.hovered ? this.hoverStyle.edge : undefined];
     const edgeStyle = resolveStyleDefinitions(edgeStyleDefinitions, edgeAttributes);
@@ -622,5 +630,39 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.graph.forEachEdge((edge: string, _attrs: any, source: string, _target: string) => {
       this.graph.setEdgeAttribute(edge, 'source', source);
     });
+  }
+
+  public convertScreenToWorld(screenX: number, screenY: number) {
+    const rect = this.app.view.getBoundingClientRect();
+    const x = screenX - rect.left;
+    const y = screenY - rect.top;
+    const screenPoint = new Point(x, y);
+    return this.viewport.toWorld(screenPoint)
+  }
+
+  public elevateNode(nodeKey: string) {
+    const node = this.nodeKeyToNodeObject.get(nodeKey)!;
+    const nodeIndex = this.nodeLayer.getChildIndex(node.nodeGfx);
+    this.nodeLayer.removeChildAt(nodeIndex);
+    this.nodeLabelLayer.removeChildAt(nodeIndex);
+    this.frontNodeLayer.removeChildAt(nodeIndex);
+    this.frontNodeLabelLayer.removeChildAt(nodeIndex);
+    this.nodeLayer.addChild(node.nodePlaceholderGfx);
+    this.nodeLabelLayer.addChild(node.nodeLabelPlaceholderGfx);
+    this.frontNodeLayer.addChild(node.nodeGfx);
+    this.frontNodeLabelLayer.addChild(node.nodeLabelGfx);
+  }
+
+  public lowerNode(nodeKey: string) {
+    const node = this.nodeKeyToNodeObject.get(nodeKey)!;
+    const nodeIndex = this.frontNodeLayer.getChildIndex(node.nodeGfx);
+    this.nodeLayer.removeChildAt(nodeIndex);
+    this.nodeLabelLayer.removeChildAt(nodeIndex);
+    this.frontNodeLayer.removeChildAt(nodeIndex);
+    this.frontNodeLabelLayer.removeChildAt(nodeIndex);
+    this.nodeLayer.addChild(node.nodeGfx);
+    this.nodeLabelLayer.addChild(node.nodeLabelGfx);
+    this.frontNodeLayer.addChild(node.nodePlaceholderGfx);
+    this.frontNodeLabelLayer.addChild(node.nodeLabelPlaceholderGfx);
   }
 }

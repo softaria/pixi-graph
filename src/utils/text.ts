@@ -1,7 +1,5 @@
-import { Text } from '@pixi/text';
-import { BitmapText } from '@pixi/text-bitmap';
-
-const WHITE = 0xffffff;
+import {ITextStyle, Text} from '@pixi/text';
+import {BitmapText} from '@pixi/text-bitmap';
 
 export enum TextType {
   TEXT = 'TEXT',
@@ -10,25 +8,15 @@ export enum TextType {
   // see https://github.com/PixelsCommander/pixi-sdf-text/issues/12
 }
 
-// TODO: use TextStyle from @pixi/text directly?
-export interface TextStyle {
-  fontFamily: string;
-  fontSize: number;
-}
-
-export function textToPixi(type: TextType, content: string, style: TextStyle) {
+export function textToPixi(type: TextType, content: string, style: Partial<ITextStyle>) {
   let text;
   if (type === TextType.TEXT) {
     // TODO: convert to bitmap font with BitmapFont.from?
-    text = new Text(content, {
-      fontFamily: style.fontFamily,
-      fontSize: style.fontSize,
-      fill: WHITE
-    });
+    text = new Text(content, style);
   } else if (type === TextType.BITMAP_TEXT) {
     text = new BitmapText(content, {
-      fontName: style.fontFamily,
-      fontSize: style.fontSize
+      fontName: Array.isArray(style.fontFamily) ? undefined : style.fontFamily,
+      fontSize: Number(style.fontSize)
     });
   } else {
     throw new Error('Invalid state');
